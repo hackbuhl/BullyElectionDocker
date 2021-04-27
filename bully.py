@@ -26,7 +26,7 @@ class bully():
 
 		#this is the place where we can say we are assigning priority variable, according to the order in the list
 		for i, server in enumerate(self.servers):
-			if server == self.addr:
+			if server[-1] == self.addr[-1]:
 				self.priority = i
 				self.connections.append(self)
 			else:

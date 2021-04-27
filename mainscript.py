@@ -1,13 +1,13 @@
 import zerorpc
 import sys
 from state import state
-from bully import bully
+from improvedbully import bully
 
-
+import socket
+print(socket.gethostbyname(socket.gethostname()))
 addr = sys.argv[1]
 bully = bully(addr, 'server_config_local')
-# bully = bully(addr, 'server_config_local_connected')
-# bully = bully(addr, 'server_config_multi')
+# bully = bully(addr, 'server_config')
 s = zerorpc.Server(bully)
 s.bind('tcp://' + addr)
 bully.initialize()
