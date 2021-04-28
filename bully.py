@@ -1,7 +1,8 @@
-gtfrom state import state
+from state import state
 import zerorpc
 import gevent
 from colored import fg, attr
+import time
 
 class bully():
 	def __init__(self, addr, config_file):
@@ -59,10 +60,13 @@ class bully():
 			self.S.state = 'Normal'
 
 	def election(self):
+		st = time.time()
+		messages = 0 
 		print ('%sCheck the states of higher priority nodes%s' % (fg(3), attr(0)))
 
 		for i, server in enumerate(self.servers[self.priority + 1:]):
 			try:
+				messages +=1
 				self.connections[self.priority + 1 + i].areYouThere()
 				if self.check_servers_greenlet is None:
 					self.S.coord = self.priority + 1 + i
@@ -81,6 +85,7 @@ class bully():
 		self.serverListBackup = []
 		for i, server in enumerate(self.servers[self.priority::-1]):
 			try:
+				messages += 1
 				self.connections[i].halt(self.priority)
 				print( '%s%s server halted successfully!%s' % (fg(2), server, attr(0)))
 			except zerorpc.TimeoutExpired:
@@ -95,6 +100,7 @@ class bully():
 		self.S.state = 'Reorganization'
 		for i, j in enumerate(self.S.Up):
 			try:
+				messages += 1
 				j.newCoordinator(self.priority)
 				print( '%s%s server received new coordinator!%s' % (fg(2), self.serverListBackup[i], attr(0)))
 			except zerorpc.TimeoutExpired:
@@ -105,6 +111,7 @@ class bully():
 		# Reorganization
 		for i, j in enumerate(self.S.Up):
 			try:
+				messages += 1
 				j.ready(self.priority)
 				print( '%s%s server is ready%s' % (fg(2), self.serverListBackup[i], attr(0)))
 			except zerorpc.TimeoutExpired:
@@ -113,6 +120,7 @@ class bully():
 				return
 
 		self.S.state = 'Normal'
+		print('election3 conducted messages: %i  time: %d', messages, time.time() - st)
 		# print '[%s] Starting ZeroRPC Server' % self.servers[self.priority]
 		self.check_servers_greenlet = self.pool.spawn(self.check())
 
